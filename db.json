@@ -1,4 +1,15 @@
 {
+  "wallets": {
+    "demo-user": {
+      "demoBalance": 250,
+      "realBalance": 0
+    }
+  },
+  "transactions": [],
+  "withdrawRequests": []
+}
+
+{
   "players": [
     {
       "id": "player-1",
