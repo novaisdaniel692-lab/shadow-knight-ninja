@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-const app = express();
+const app = express();npm install
 const PORT = process.env.PORT || 3000;
 
 const DB_PATH = path.join(__dirname, "db.json");
