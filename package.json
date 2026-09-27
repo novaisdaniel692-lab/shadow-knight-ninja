@@ -1,8 +1,0 @@
-{
-  "name": "shadow-knight-ninja",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Protótipo funcional de Shadow Knight Ninja com moedas virtuais.",
-  "scripts": { "start": "node server.js" },
-  "dependencies": {}
-}
