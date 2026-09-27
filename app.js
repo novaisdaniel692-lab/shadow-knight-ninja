@@ -1,3 +1,253 @@
+const API = "/api";
+
+const demoBalanceEl = document.getElementById("demoBalance");
+const realBalanceEl = document.getElementById("realBalance");
+const rewardHistoryEl = document.getElementById("rewardHistory");
+const withdrawHistoryEl = document.getElementById("withdrawHistory");
+
+function formatBRL(value) {
+  return Number(value || 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
+
+async function apiRequest(url, options = {}) {
+  const response = await fetch(`${API}${url}`, {
+    headers: {
+      "Content-Type": "application/json"
+    },
+    ...options
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Ocorreu um erro.");
+  }
+
+  return data;
+}
+
+function safeText(value) {
+  return String(value ?? "");
+}
+
+function renderTransactions(transactions = []) {
+  if (!rewardHistoryEl) return;
+
+  if (!transactions.length) {
+    rewardHistoryEl.textContent = "Nenhuma movimentação DEMO ainda.";
+    return;
+  }
+
+  rewardHistoryEl.innerHTML = transactions.map(item => {
+    const date = new Date(item.createdAt).toLocaleString("pt-BR");
+
+    return `
+      <div class="history-item">
+        <strong>${safeText(item.description)}</strong>
+        <span>${formatBRL(item.amount)}</span>
+        <small>${date} · DEMONSTRAÇÃO</small>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderWithdrawals(requests = []) {
+  if (!withdrawHistoryEl) return;
+
+  if (!requests.length) {
+    withdrawHistoryEl.textContent = "Nenhuma solicitação simulada.";
+    return;
+  }
+
+  withdrawHistoryEl.innerHTML = requests.map(item => {
+    const date = new Date(item.createdAt).toLocaleString("pt-BR");
+
+    return `
+      <div class="history-item">
+        <strong>Saque simulado</strong>
+        <span>${formatBRL(item.amount)}</span>
+        <small>${safeText(item.status)} · ${date}</small>
+      </div>
+    `;
+  }).join("");
+}
+
+async function loadWallet() {
+  try {
+    const wallet = await apiRequest("/wallet");
+
+    if (demoBalanceEl) {
+      demoBalanceEl.textContent = formatBRL(wallet.demoBalance);
+    }
+
+    // Saldo real fica fixo em zero no modo sandbox.
+    if (realBalanceEl) {
+      realBalanceEl.textContent = formatBRL(0);
+    }
+
+    renderTransactions(wallet.transactions);
+    renderWithdrawals(wallet.withdrawRequests);
+  } catch (error) {
+    console.error(error);
+    alert(error.message || "Não foi possível carregar a carteira.");
+  }
+}
+
+function createWalletModal() {
+  let modal = document.getElementById("walletSandboxModal");
+
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = "walletSandboxModal";
+  modal.style.cssText = `
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0,0,0,.8);
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      width: 100%;
+      max-width: 400px;
+      padding: 22px;
+      border-radius: 16px;
+      background: #11151d;
+      color: white;
+      border: 1px solid #444;
+    ">
+      <h2 id="sandboxModalTitle">Carteira DEMO</h2>
+      <p id="sandboxModalDescription">
+        Esta operação é apenas uma simulação. Nenhum dinheiro real será movimentado.
+      </p>
+
+      <label for="sandboxAmount">Valor demonstrativo (R$)</label>
+      <input
+        id="sandboxAmount"
+        type="number"
+        min="1"
+        max="10000"
+        step="0.01"
+        placeholder="Ex.: 25,00"
+        style="
+          display: block;
+          box-sizing: border-box;
+          width: 100%;
+          margin: 10px 0 16px;
+          padding: 12px;
+        "
+      >
+
+      <div style="display:flex;gap:10px">
+        <button id="sandboxConfirm" type="button">CONFIRMAR SIMULAÇÃO</button>
+        <button id="sandboxCancel" type="button">CANCELAR</button>
+      </div>
+
+      <p style="font-size:12px;color:#bbb;margin-top:14px">
+        Modo sandbox · Sem Pix real · Sem transferência
+      </p>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  modal.addEventListener("click", event => {
+    if (event.target === modal) closeSandboxModal();
+  });
+
+  modal.querySelector("#sandboxCancel").addEventListener("click", closeSandboxModal);
+
+  return modal;
+}
+
+let currentSandboxAction = null;
+
+function openModal(type) {
+  const modal = createWalletModal();
+  const title = modal.querySelector("#sandboxModalTitle");
+  const description = modal.querySelector("#sandboxModalDescription");
+  const confirmButton = modal.querySelector("#sandboxConfirm");
+  const amountInput = modal.querySelector("#sandboxAmount");
+
+  currentSandboxAction = type === "withdraw" ? "withdraw" : "deposit";
+
+  if (currentSandboxAction === "withdraw") {
+    title.textContent = "Saque DEMO";
+    description.textContent =
+      "Você vai criar uma solicitação de saque simulada. Nenhum dinheiro será enviado.";
+    confirmButton.textContent = "SIMULAR SAQUE";
+  } else {
+    title.textContent = "Adicionar saldo DEMO";
+    description.textContent =
+      "Você vai adicionar moedas demonstrativas. Não é um pagamento real.";
+    confirmButton.textContent = "ADICIONAR DEMO";
+  }
+
+  amountInput.value = "";
+  modal.style.display = "flex";
+
+  confirmButton.onclick = submitSandboxAction;
+}
+
+function closeSandboxModal() {
+  const modal = document.getElementById("walletSandboxModal");
+  if (modal) modal.style.display = "none";
+}
+
+async function submitSandboxAction() {
+  const modal = document.getElementById("walletSandboxModal");
+  const amountInput = modal.querySelector("#sandboxAmount");
+  const confirmButton = modal.querySelector("#sandboxConfirm");
+  const amount = Number(amountInput.value);
+
+  if (!Number.isFinite(amount) || amount <= 0 || amount > 10000) {
+    alert("Digite um valor entre R$ 0,01 e R$ 10.000,00.");
+    return;
+  }
+
+  confirmButton.disabled = true;
+
+  try {
+    if (currentSandboxAction === "withdraw") {
+      const result = await apiRequest("/demo/withdraw", {
+        method: "POST",
+        body: JSON.stringify({ amount })
+      });
+
+      alert(result.message);
+    } else {
+      const result = await apiRequest("/demo/deposit", {
+        method: "POST",
+        body: JSON.stringify({ amount })
+      });
+
+      alert(result.message);
+    }
+
+    closeSandboxModal();
+    await loadWallet();
+  } catch (error) {
+    alert(error.message || "Não foi possível concluir a simulação.");
+  } finally {
+    confirmButton.disabled = false;
+  }
+}
+
+// Mantém compatibilidade com os botões onclick do HTML.
+window.openModal = openModal;
+
+document.addEventListener("DOMContentLoaded", loadWallet);
+
+
+
 let state=null;
 async function api(path,body){const r=await fetch(path,{method:body?"POST":"GET",headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok)throw Error(d.error||"Erro");return d}
 async function load(){state=await api("/api/state");render()} 
