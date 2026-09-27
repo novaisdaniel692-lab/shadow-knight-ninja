@@ -1,36 +1,3 @@
-<!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Shadow Knight Ninja</title><link rel="stylesheet" href="/style.css"></head>
-<body>
-<div class="bg"></div>
-<header class="top"><div class="brand"><span>◈</span> SHADOW KNIGHT <b>NINJA</b></div><button class="icon" onclick="toggleMenu()">☰</button></header>
-<nav id="menu" class="menu">
-<button onclick="show('home')">Jogar</button><button onclick="show('wallet')">Carteira</button><button onclick="show('missions')">Missões</button><button onclick="show('ranking')">Ranking</button><button onclick="show('profile')">Perfil</button>
-</nav>
-
-<main>
-<section id="home" class="screen active">
-  <div class="hero">
-    <div class="ninja-wrap"><div class="moon"></div><div class="ninja">🥷</div></div>
-    <p class="eyebrow">A LENDA COMEÇA NA SOMBRA</p><h1>SHADOW KNIGHT<br><span>NINJA</span></h1>
-    <p class="muted">Ação, aventura e desafios. Colete moedas virtuais e evolua seu ninja.</p>
-    <button class="primary big" onclick="startGame()">⚔ JOGAR</button>
-    <div class="home-grid"><button onclick="show('wallet')">◈ CARTEIRA</button><button onclick="show('missions')">✦ MISSÕES</button><button onclick="show('ranking')">♛ RANKING</button><button onclick="show('profile')">◉ PERFIL</button></div>
-  </div>
-</section>
-
-<section id="game" class="screen">
- <div class="gamebar"><button onclick="show('home')">←</button><span id="levelLabel">FASE 1</span><span>🪙 <b id="gameCoins">0</b></span></div>
- <div class="game">
-   <div class="sky"></div><div class="platform p1"></div><div class="platform p2"></div><div class="platform p3"></div>
-   <div id="enemy" class="enemy">👹</div><div id="player" class="player">🥷</div>
-   <div class="coin c1">🪙</div><div class="coin c2">🪙</div><div class="coin c3">🪙</div>
-   <div class="finish">⛩️</div>
-   <div class="gamehint">Use os botões para mover, pular, atacar e desviar.</div>
- </div>
- <div class="controls"><button onpointerdown="move(-1)">◀</button><button onpointerdown="jump()">⬆</button><button class="attack" onpointerdown="attack()">⚔</button><button onpointerdown="move(1)">▶</button><button onpointerdown="dodge()">↝</button></div>
- <div class="level-actions"><button onclick="collectReward()">Coletar moedas</button><button onclick="completeLevel()">Concluir fase</button></div>
-</section>
 <section id="wallet" class="screen">
 
   <div class="section-head">
@@ -42,39 +9,63 @@
 
     <div class="wallet-card demo">
       <small>SALDO DEMO</small>
-      <strong id="demoBalance">R$ 250,00</strong>
-      <span>Moedas de demonstração</span>
+
+      <strong id="demoBalance">
+        R$ 250,00
+      </strong>
+
+      <span>
+        Moedas de demonstração
+      </span>
     </div>
 
     <div class="wallet-card real">
       <small>SALDO REAL</small>
-      <strong id="realBalance">R$ 0,00</strong>
-      <span>Disponível para saque</span>
+
+      <strong id="realBalance">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Indisponível no sandbox
+      </span>
     </div>
 
   </div>
 
-  <div class="actions">
-    <button class="primary" onclick="openModal('deposit')">
-      ADICIONAR
+  <div class="wallet-actions">
+
+    <button
+      class="primary"
+      onclick="adicionarDemo()">
+      ADICIONAR DEMO
     </button>
 
-    <button onclick="openModal('withdraw')">
-      SACAR
+    <button
+      onclick="sacarDemo()">
+      SACAR DEMO
     </button>
+
   </div>
 
   <div class="card">
+
     <h3>Histórico de recompensas</h3>
-    <div id="rewardHistory"></div>
+
+    <div id="rewardHistory">
+      Carregando...
+    </div>
+
   </div>
 
   <div class="card">
+
     <h3>Solicitações de saque</h3>
-    <div id="withdrawHistory"></div>
+
+    <div id="withdrawHistory">
+      Carregando...
+    </div>
+
   </div>
 
 </section>
-<div id="modal" class="modal"><div class="modal-box"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div>
-<script src="/app.js"></script>
-</body></html>
