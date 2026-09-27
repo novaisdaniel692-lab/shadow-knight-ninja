@@ -1,0 +1,12 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SKN Admin</title><link rel="stylesheet" href="/style.css"></head><body>
+<header class="top"><div class="brand">◈ SKN <b>ADMIN</b></div><a href="/" class="adminlink">← Jogo</a></header>
+<main><section class="screen active"><div class="section-head"><p class="eyebrow">CONTROLE</p><h2>Painel Administrativo</h2><p class="notice">Protótipo local. Solicitações financeiras são somente simulações.</p></div>
+<div id="adminStats" class="stats"></div><div class="card"><h3>Jogadores</h3><div id="players"></div></div><div class="card"><h3>Solicitações de saque simuladas</h3><div id="withdrawals"></div></div><div class="card"><h3>Transações virtuais</h3><div id="transactions"></div></div></section></main><script>
+async function load(){const r=await fetch('/api/admin');const d=await r.json();
+document.querySelector('#adminStats').innerHTML=`<div><b>${d.players.length}</b><small>Jogadores</small></div><div><b>${d.transactions.length}</b><small>Transações</small></div><div><b>${d.withdrawals.length}</b><small>Saques simulados</small></div>`;
+document.querySelector('#players').innerHTML=d.players.map(p=>`<div class="row"><span>🥷 ${p.name}</span><b>${p.coins} 🪙 · Nv.${p.level}</b></div>`).join('');
+document.querySelector('#withdrawals').innerHTML=d.withdrawals.length?d.withdrawals.map(w=>`<div class="row"><span>${w.amount} 🪙 · ${w.method}<small>${w.status}</small></span><select onchange="status('${w.id}',this.value)"><option>Pendente — SIMULAÇÃO</option><option>Processando — SIMULAÇÃO</option><option>Concluído — SIMULAÇÃO</option></select></div>`).join(''):'<p class="muted">Nenhuma solicitação.</p>';
+document.querySelector('#transactions').innerHTML=d.transactions.slice(0,30).map(t=>`<div class="row"><span>${t.description}<small>${new Date(t.createdAt).toLocaleString('pt-BR')}</small></span><b>${t.amount>0?'+':''}${t.amount} 🪙</b></div>`).join('');
+}
+async function status(id,value){await fetch('/api/admin/withdrawal-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,status:value})});load()} load();
+</script></body></html>
