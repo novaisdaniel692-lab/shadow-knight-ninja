@@ -1,4 +1,6 @@
-let state=null;
+public/app.js
+public/style.css
+public/admin.htmllet state=null;
 async function api(path,body){const r=await fetch(path,{method:body?"POST":"GET",headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok)throw Error(d.error||"Erro");return d}
 async function load(){state=await api("/api/state");render()} 
 function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.getElementById("menu").classList.remove("open"); if(id==="wallet"||id==="missions"||id==="ranking"||id==="profile")render()}
