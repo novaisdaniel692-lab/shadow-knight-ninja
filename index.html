@@ -31,22 +31,50 @@
  <div class="controls"><button onpointerdown="move(-1)">◀</button><button onpointerdown="jump()">⬆</button><button class="attack" onpointerdown="attack()">⚔</button><button onpointerdown="move(1)">▶</button><button onpointerdown="dodge()">↝</button></div>
  <div class="level-actions"><button onclick="collectReward()">Coletar moedas</button><button onclick="completeLevel()">Concluir fase</button></div>
 </section>
-
 <section id="wallet" class="screen">
- <div class="section-head"><p class="eyebrow">TESOURO</p><h2>Carteira Virtual</h2><p class="notice">🛡️ Moedas exclusivamente virtuais. Não representam dinheiro real.</p></div>
- <div class="balance"><small>SALDO VIRTUAL</small><strong id="walletCoins">0</strong><span>🪙 moedas</span></div>
- <div class="actions"><button class="primary" onclick="openModal('deposit')">＋ ADICIONAR MOEDAS</button><button onclick="openModal('withdraw')">↗ SOLICITAR SAQUE</button></div>
- <div class="card"><h3>Histórico de recompensas</h3><div id="txList"></div></div>
- <div class="card"><h3>Solicitações de saque</h3><div id="withdrawList"></div></div>
+
+  <div class="section-head">
+    <p class="eyebrow">TESOURO</p>
+    <h2>Carteira Virtual</h2>
+  </div>
+
+  <div class="wallet">
+
+    <div class="wallet-card demo">
+      <small>SALDO DEMO</small>
+      <strong id="demoBalance">R$ 250,00</strong>
+      <span>Moedas de demonstração</span>
+    </div>
+
+    <div class="wallet-card real">
+      <small>SALDO REAL</small>
+      <strong id="realBalance">R$ 0,00</strong>
+      <span>Disponível para saque</span>
+    </div>
+
+  </div>
+
+  <div class="actions">
+    <button class="primary" onclick="openModal('deposit')">
+      ADICIONAR
+    </button>
+
+    <button onclick="openModal('withdraw')">
+      SACAR
+    </button>
+  </div>
+
+  <div class="card">
+    <h3>Histórico de recompensas</h3>
+    <div id="rewardHistory"></div>
+  </div>
+
+  <div class="card">
+    <h3>Solicitações de saque</h3>
+    <div id="withdrawHistory"></div>
+  </div>
+
 </section>
-
-<section id="missions" class="screen"><div class="section-head"><p class="eyebrow">DESAFIOS</p><h2>Missões</h2></div><div id="missionsList" class="list"></div><button class="daily" onclick="daily()">🎁 RESGATAR BÔNUS DIÁRIO — 50 🪙</button></section>
-
-<section id="ranking" class="screen"><div class="section-head"><p class="eyebrow">HONRA</p><h2>Ranking</h2></div><div id="rankList" class="list"></div></section>
-
-<section id="profile" class="screen"><div class="profile"><div class="avatar">🥷</div><h2 id="profileName">Shadow</h2><p>Ninja da Sombra</p><div class="xp"><span id="levelText">Nível 1</span><div><i id="xpBar"></i></div></div><div class="stats"><div><b id="statLevel">1</b><small>Nível</small></div><div><b id="statLevels">0</b><small>Fases</small></div><div><b id="statAch">0</b><small>Conquistas</small></div></div></div></section>
-</main>
-
 <div id="modal" class="modal"><div class="modal-box"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div>
 <script src="/app.js"></script>
 </body></html>
