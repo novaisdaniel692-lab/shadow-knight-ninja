@@ -1,15 +1,5 @@
 {
-  "wallets": {
-    "demo-user": {
-      "demoBalance": 250,
-      "realBalance": 0
-    }
-  },
-  "transactions": [],
-  "withdrawRequests": []
-}
-
-{
+  "mode": "SANDBOX",
   "players": [
     {
       "id": "player-1",
@@ -17,12 +7,13 @@
       "level": 1,
       "xp": 0,
       "coins": 250,
+      "realBalance": 0,
       "completedMissions": [],
       "completedLevels": [],
       "achievements": [],
       "inventory": [],
-      "createdAt": "2026-09-27T00:00:00.000Z",
-      "realBalance": 0
+      "coinsCollected": 0,
+      "createdAt": "2026-09-27T00:00:00.000Z"
     }
   ],
   "transactions": [
@@ -33,11 +24,13 @@
       "amount": 250,
       "description": "Bônus inicial",
       "status": "Concluído",
+      "mode": "SANDBOX",
       "createdAt": "2026-09-27T00:00:00.000Z"
     }
   ],
   "withdrawals": [],
   "deposits": [],
+  "webhookEvents": [],
   "missions": [
     {
       "id": "m1",
@@ -63,6 +56,5 @@
       "goal": "daily",
       "target": 1
     }
-  ],
-  "webhookEvents": []
+  ]
 }
