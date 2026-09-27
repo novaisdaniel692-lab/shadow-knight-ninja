@@ -1,3 +1,198 @@
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+const DB_PATH = path.join(__dirname, "db.json");
+const USER_ID = "demo-user";
+
+app.use(express.json());
+app.use(express.static(__dirname));
+
+function readDb() {
+  const raw = fs.readFileSync(DB_PATH, "utf8");
+  return JSON.parse(raw);
+}
+
+function writeDb(db) {
+  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+}
+
+function money(value) {
+  return Math.round(Number(value) * 100) / 100;
+}
+
+function validAmount(value) {
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount > 0 && amount <= 10000;
+}
+
+function ensureWallet(db) {
+  if (!db.wallets[USER_ID]) {
+    db.wallets[USER_ID] = {
+      demoBalance: 250,
+      realBalance: 0
+    };
+  }
+
+  if (!Array.isArray(db.transactions)) db.transactions = [];
+  if (!Array.isArray(db.withdrawRequests)) db.withdrawRequests = [];
+
+  return db.wallets[USER_ID];
+}
+
+function addTransaction(db, type, amount, description) {
+  db.transactions.unshift({
+    id: crypto.randomUUID(),
+    userId: USER_ID,
+    type,
+    amount: money(amount),
+    description,
+    mode: "SANDBOX",
+    createdAt: new Date().toISOString()
+  });
+}
+
+// Consulta a carteira
+app.get("/api/wallet", (req, res) => {
+  try {
+    const db = readDb();
+    const wallet = ensureWallet(db);
+
+    res.json({
+      mode: "SANDBOX",
+      demoBalance: money(wallet.demoBalance),
+      realBalance: 0,
+      transactions: db.transactions.filter(
+        item => item.userId === USER_ID
+      ).slice(0, 20),
+      withdrawRequests: db.withdrawRequests.filter(
+        item => item.userId === USER_ID
+      ).slice(0, 20)
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Não foi possível carregar a carteira." });
+  }
+});
+
+// Adiciona saldo DEMO
+app.post("/api/demo/deposit", (req, res) => {
+  try {
+    const amount = Number(req.body.amount);
+
+    if (!validAmount(amount)) {
+      return res.status(400).json({
+        error: "Informe um valor válido para a simulação."
+      });
+    }
+
+    const db = readDb();
+    const wallet = ensureWallet(db);
+
+    wallet.demoBalance = money(wallet.demoBalance + amount);
+
+    addTransaction(
+      db,
+      "DEMO_DEPOSIT",
+      amount,
+      "Adição de saldo demonstrativo"
+    );
+
+    writeDb(db);
+
+    res.json({
+      message: "Adição simulada concluída.",
+      demoBalance: wallet.demoBalance,
+      realBalance: 0
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao adicionar saldo DEMO." });
+  }
+});
+
+// Cria solicitação de saque DEMO
+app.post("/api/demo/withdraw", (req, res) => {
+  try {
+    const amount = Number(req.body.amount);
+
+    if (!validAmount(amount)) {
+      return res.status(400).json({
+        error: "Informe um valor válido para a simulação."
+      });
+    }
+
+    const db = readDb();
+    const wallet = ensureWallet(db);
+
+    if (amount > wallet.demoBalance) {
+      return res.status(400).json({
+        error: "Saldo DEMO insuficiente."
+      });
+    }
+
+    wallet.demoBalance = money(wallet.demoBalance - amount);
+
+    const request = {
+      id: crypto.randomUUID(),
+      userId: USER_ID,
+      amount: money(amount),
+      status: "SIMULADO",
+      mode: "SANDBOX",
+      createdAt: new Date().toISOString()
+    };
+
+    db.withdrawRequests.unshift(request);
+
+    addTransaction(
+      db,
+      "DEMO_WITHDRAW",
+      amount,
+      "Solicitação de saque simulada"
+    );
+
+    writeDb(db);
+
+    res.json({
+      message: "Solicitação de saque simulada. Nenhum dinheiro foi enviado.",
+      demoBalance: wallet.demoBalance,
+      realBalance: 0,
+      request
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao simular o saque." });
+  }
+});
+
+// Rota informativa: saldo real não pode ser alterado no sandbox
+app.post("/api/real/*", (req, res) => {
+  res.status(403).json({
+    error: "Operações com dinheiro real não estão habilitadas neste sandbox."
+  });
+});
+
+app.get("/api/status", (req, res) => {
+  res.json({
+    status: "online",
+    mode: "SANDBOX",
+    realMoneyEnabled: false
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor sandbox rodando na porta ${PORT}`);
+});
+
+
+
+
+
+
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
